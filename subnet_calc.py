@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Calculo de subnet (con CIDR) / Ejercicios de entrenamiento (curso de Python Ofensivo hack4u.io)
 # 08-04-2024 / rnek0
+# Tool for check results : https://www.cidr.eu/en/calculator
 import sys
+import re
 import ipaddress
 from colores import *
 
@@ -24,8 +26,12 @@ class Banner:
         print(f"{TUI.colorea(cls.title,Color.verde)}\n{spaces} {ip_cidr}\n")
 
     @classmethod
-    def usage(cls):
+    def usage(cls, err=""):
         """Display help"""
+
+        if err != "":
+            alert = TUI.colorea(f" [!] ",Color.rojo)
+            print(f"{alert}{err}")
 
         warning, ejemplo_ipv4 = TUI.colorea(f"[!]",Color.verde), TUI.colorea(f"192.168.1.1/24",Color.verde)
         ejemplo_ipv6 = TUI.colorea(f"2001:4b98:dc0:43:f816:3eff:fe10:e35e/64",Color.azul)
@@ -36,6 +42,10 @@ class Banner:
     def display_line_result(cls, section, result):
         print(f"  {TUI.warning('[+]')} {section:<33}: {result}")
     
+    @classmethod
+    def exit_app(cls, err=""):
+        cls.display_banner()
+        cls.usage(err)
 
 
 def check_ip_arg(arg_ip):
@@ -44,22 +54,21 @@ def check_ip_arg(arg_ip):
 
     if '/' in ip_cidr:
         if ':' in ip_cidr:
-            print(f"IPv6: {ip_cidr}")
-            ip = ip_cidr.split('/')[0]
+            ip = ip_cidr.split('/')[0] #print(f"IPv6: {ip_cidr}")
             mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 128 else "no_cidr"
             if mask_cidr == "no_cidr":
-                Banner.display_banner()
-                Banner.usage()
+                Banner.exit_app("La mask CIDR no esta dentro de los valores(1 a 128)")
         else:
-            print(f"IPv4: {ip_cidr}")
-            ip = ip_cidr.split('/')[0]
-            mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 32 else "no_cidr"
-            if mask_cidr == "no_cidr":
-                Banner.display_banner()
-                Banner.usage()
+            ip = ip_cidr.split('/')[0] #print(f"IPv4: {ip_cidr}")
+            if CIDR.validate_ip_regex(ip):
+                mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 32 else "no_cidr"
+                if mask_cidr == "no_cidr":
+                    Banner.exit_app("La mask CIDR no esta dentro de los valores(1 a 32)")
+
+            else:
+                Banner.exit_app("La ip no es correcta.")
     else:
-        Banner.display_banner()
-        Banner.usage()
+        Banner.exit_app("El formato CIDR se escribe con IP/Prefijo")
 
     Banner.display_banner(f"{ip}/{mask_cidr}") 
 
@@ -81,11 +90,32 @@ class CIDR:
     def version(self):
         return self.__ip.version
 
+    @classmethod
+    def validate_ip_regex(cls,ip_address):
+        """Check IPv4 Address. True if valid IPv4 ip."""
+        if not bool(re.search(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip_address)):
+           print(f"The IP address {ip_address} is not valid")
+           return False
+
+        bytes = ip_address.split(".")
+
+        for ip_byte in bytes:
+           if int(ip_byte) < 0 or int(ip_byte) > 255:
+               print(f"The IP address {ip_address} is not valid")
+               return False
+        print(f"The IP address {ip_address} is valid")
+        return True 
+
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         Banner.usage()
     
+    # TODO : Faire la difference sur le calcul entre ipv4 et ipv6 ()
+
     ip,prefix = check_ip_arg( sys.argv[1] )
+
     cidr = CIDR(ip,prefix)
 
     # CIDR Range
