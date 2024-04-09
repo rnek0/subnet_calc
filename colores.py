@@ -55,7 +55,7 @@ class TUI:
 
     @con_color
     def escribe(self,texto,color=Color.fg):
-        """TUI.escribe() Escribe una string con el color pasado en parametro"""
+        """TUI.escribe() Escribe una string con el color pasado en parámetro"""
         self._color = color
         print(f"{texto}\x1b[0m", end= " ")
 

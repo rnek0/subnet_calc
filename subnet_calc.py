@@ -10,12 +10,11 @@ from colores import *
 class Banner:
     """Banner class se encarga de imprimir el banner y la ayuda."""
     title = """
-                   __                      __      ________ 
-       ____  ___  / /__      ______  _____/ /__   /  _/ __ \\
-      / __ \/ _ \/ __/ | /| / / __ \/ ___/ //_/   / // / / /
-     / / / /  __/ /_ | |/ |/ / /_/ / /  / ,<    _/ // /_/ / 
-    /_/ /_/\___/\__/ |__/|__/\____/_/  /_/|_|  /___/_____/ 
-    """
+      _____       __               __     ______      __    
+     / ___/__  __/ /_  ____  ___  / /_   / ____/___ _/ /____
+     \__ \/ / / / __ \/ __ \/ _ \/ __/  / /   / __ `/ / ___/
+    ___/ / /_/ / /_/ / / / /  __/ /_   / /___/ /_/ / / /__  
+   /____/\__,_/_.___/_/ /_/\___/\__/   \____/\__,_/_/\___/  """
     
     @classmethod
     def display_banner(cls,ip=""):
@@ -40,16 +39,19 @@ class Banner:
 
     @classmethod
     def display_line_result(cls, section, result):
-        print(f"  {TUI.warning('[+]')} {section:<33}: {result}")
+        """Display line results"""
+        warning = TUI.warning('[+]')
+        print(f"  {warning} {section:<48}: {result}")
     
     @classmethod
     def exit_app(cls, err=""):
+        """Exit on err"""
         cls.display_banner()
         cls.usage(err)
 
 
 def check_ip_arg(arg_ip):
-    """check_ip_arg verifica el parámetro de ip CIDR requerido"""
+    """check_ip_arg verifica el bloque CIDR requerido. """
     ip_cidr = arg_ip
 
     if '/' in ip_cidr:
@@ -57,18 +59,18 @@ def check_ip_arg(arg_ip):
             ip = ip_cidr.split('/')[0] #print(f"IPv6: {ip_cidr}")
             mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 128 else "no_cidr"
             if mask_cidr == "no_cidr":
-                Banner.exit_app("La mask CIDR no esta dentro de los valores(1 a 128)")
+                Banner.exit_app("La longitud de prefijo CIDR no esta dentro de los valores(1 a 128)")
         else:
             ip = ip_cidr.split('/')[0] #print(f"IPv4: {ip_cidr}")
             if CIDR.validate_ip_regex(ip):
                 mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 32 else "no_cidr"
                 if mask_cidr == "no_cidr":
-                    Banner.exit_app("La mask CIDR no esta dentro de los valores(1 a 32)")
+                    Banner.exit_app("La longitud de prefijo CIDR no esta dentro de los valores(1 a 32)")
 
             else:
                 Banner.exit_app("La ip no es correcta.")
     else:
-        Banner.exit_app("El formato CIDR se escribe con IP/Prefijo")
+        Banner.exit_app("El formato de un bloque CIDR se escribe con IP/Prefijo")
 
     Banner.display_banner(f"{ip}/{mask_cidr}") 
 
@@ -94,16 +96,14 @@ class CIDR:
     def validate_ip_regex(cls,ip_address):
         """Check IPv4 Address. True if valid IPv4 ip."""
         if not bool(re.search(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", ip_address)):
-           print(f"The IP address {ip_address} is not valid")
            return False
 
         bytes = ip_address.split(".")
 
         for ip_byte in bytes:
            if int(ip_byte) < 0 or int(ip_byte) > 255:
-               print(f"The IP address {ip_address} is not valid")
                return False
-        print(f"The IP address {ip_address} is valid")
+
         return True 
 
 
@@ -115,30 +115,37 @@ if __name__ == "__main__":
     # TODO : Faire la difference sur le calcul entre ipv4 et ipv6 ()
 
     ip,prefix = check_ip_arg( sys.argv[1] )
-
     cidr = CIDR(ip,prefix)
 
     # CIDR Range
-    ip_version = TUI.colorea(f"{sys.argv[1]}",Color.verde)
-    Banner.display_line_result("CIDR Range", ip_version)
+    ip_version = TUI.colorea(f"{sys.argv[1]}",Color.azul)
+    trad = "CIDR Range" + TUI.colorea(f"(Bloque CIDR)",Color.gris)
+    Banner.display_line_result(trad, ip_version)
 
     # Ip Versión
-    ip_version = TUI.colorea(f"IPv{cidr.version}",Color.verde)
-    Banner.display_line_result("Versión de la ip", ip_version)
+    # ip_version = TUI.colorea(f"IPv{cidr.version}",Color.verde)
+    # trad = TUI.colorea(f"(Bloque CIDR)",Color.gris)
+    # Banner.display_line_result("Versión de la ip", ip_version)
     
     ipv4_network = ipaddress.ip_network(f"{ip}/{prefix}", strict=False) # Definición de la red IP (strict=False lève l'interdiction de mettre a 1 )
-    mascara = TUI.colorea(f"{ipv4_network.netmask}",Color.verde)
 
     # Máscara de red
-    Banner.display_line_result("Netmask / Máscara de red", mascara)
-    mascara_host = TUI.colorea(f"{ipv4_network.hostmask}",Color.verde)
+    mascara = TUI.colorea(f"{ipv4_network.netmask}",Color.azul)
+    trad = "Subnet Mask " + TUI.colorea(f"(Máscara de subred)",Color.gris)
+    Banner.display_line_result(trad, mascara)
 
     # Dirección de subred
-    subred = TUI.colorea(f"{cidr.subred}",Color.verde)
-    Banner.display_line_result("Dirección de subred", subred)
+    subred = TUI.colorea(f"{cidr.subred}",Color.azul)
+    trad = f"Subnet address" + TUI.colorea(f"(Dirección subred)",Color.gris)
+    Banner.display_line_result(f"{trad}", subred)
     
-    Banner.display_line_result("Wildcard Bits / Máscara de host", mascara_host)
+    # Wildcard Bits
+    mascara_host = TUI.colorea(f"{ipv4_network.hostmask}",Color.azul)
+    trad = f"Wildcard Bits" + TUI.colorea(f"(Máscara de host)",Color.gris)
+    Banner.display_line_result(f"{trad}", mascara_host)
 
-    mascara = TUI.colorea(f"{ipv4_network.num_addresses}",Color.verde)
-    Banner.display_line_result("Total Host / Direcciones", mascara)
+    #Total Hosts
+    mascara = TUI.colorea(f"{ipv4_network.num_addresses}",Color.azul)
+    trad = f"Total Hosts" + TUI.colorea(f"(Total Hosts)",Color.gris)
+    Banner.display_line_result(f"{trad}", mascara)
     print()
