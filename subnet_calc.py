@@ -22,25 +22,27 @@ class Banner:
         l = len(ip)
         spaces = f"  {'-'*(54 - l)}"
         ip_cidr = f"{ip}"
-        print(f"{TUI.colorea(cls.title,Color.verde)}\n{spaces} {ip_cidr}\n")
+        print(f"{Tui.colorea(cls.title,Color.verde)}\n{spaces} {ip_cidr}\n")
 
     @classmethod
     def usage(cls, err=""):
         """Display help"""
 
+        cls.display_banner()
+
         if err != "":
-            alert = TUI.colorea(f" [!] ",Color.rojo)
+            alert = Tui.colorea(f" [!] ",Color.rojo)
             print(f"{alert}{err}")
 
-        warning, ejemplo_ipv4 = TUI.colorea(f"[!]",Color.verde), TUI.colorea(f"192.168.1.1/24",Color.verde)
-        ejemplo_ipv6 = TUI.colorea(f"2001:4b98:dc0:43:f816:3eff:fe10:e35e/64",Color.azul)
+        warning, ejemplo_ipv4 = Tui.colorea(f"[!]",Color.verde), Tui.colorea(f"192.168.1.1/24",Color.verde)
+        ejemplo_ipv6 = Tui.colorea(f"2001:4b98:dc0:43:f816:3eff:fe10:e35e/64",Color.azul)
         print(f"\n {warning} USO :\n\t Entra el valor de la ip con notación CIDR.\n\t Ejemplos : \n\t  - {ejemplo_ipv4}\n\t  - {ejemplo_ipv6}\n")
         exit(1)
 
     @classmethod
     def display_line_result(cls, section, result):
         """Display line results"""
-        warning = TUI.warning('[+]')
+        warning = Tui.warning('[+]')
         print(f"  {warning} {section:<48}: {result}")
     
     @classmethod
@@ -62,7 +64,7 @@ def check_ip_arg(arg_ip):
                 Banner.exit_app("La longitud de prefijo CIDR no esta dentro de los valores(1 a 128)")
         else:
             ip = ip_cidr.split('/')[0] #print(f"IPv4: {ip_cidr}")
-            if CIDR.validate_ip_regex(ip):
+            if Cidr.validate_ip_regex(ip):
                 mask_cidr = ip_cidr.split('/')[1] if int(ip_cidr.split('/')[1]) > 0 and int(ip_cidr.split('/')[1]) <= 32 else "no_cidr"
                 if mask_cidr == "no_cidr":
                     Banner.exit_app("La longitud de prefijo CIDR no esta dentro de los valores(1 a 32)")
@@ -76,7 +78,7 @@ def check_ip_arg(arg_ip):
 
     return (ip,mask_cidr)   
 
-class CIDR:
+class Cidr:
     def __init__(self, ip, prefix):
         # Creación de ip 'La factory' crea el objeto a partir de string ipv4 o ipv6
         self.__ip = ipaddress.ip_address(ip)
@@ -107,7 +109,6 @@ class CIDR:
         return True 
 
 
-
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         Banner.usage()
@@ -115,37 +116,33 @@ if __name__ == "__main__":
     # TODO : Faire la difference sur le calcul entre ipv4 et ipv6 ()
 
     ip,prefix = check_ip_arg( sys.argv[1] )
-    cidr = CIDR(ip,prefix)
+    cidr = Cidr(ip,prefix)
 
     # CIDR Range
-    ip_version = TUI.colorea(f"{sys.argv[1]}",Color.azul)
-    trad = "CIDR Range" + TUI.colorea(f"(Bloque CIDR)",Color.gris)
+    ip_version = Tui.colorea(f"{sys.argv[1]}",Color.azul)
+    trad = "CIDR Range" + Tui.colorea(f"(Bloque CIDR)",Color.gris)
     Banner.display_line_result(trad, ip_version)
 
-    # Ip Versión
-    # ip_version = TUI.colorea(f"IPv{cidr.version}",Color.verde)
-    # trad = TUI.colorea(f"(Bloque CIDR)",Color.gris)
-    # Banner.display_line_result("Versión de la ip", ip_version)
-    
-    ipv4_network = ipaddress.ip_network(f"{ip}/{prefix}", strict=False) # Definición de la red IP (strict=False lève l'interdiction de mettre a 1 )
+    # Definición de la red IP (strict=False lève l'interdiction de mettre a 1 )
+    ipv4_network = ipaddress.ip_network(f"{ip}/{prefix}", strict=False) 
 
     # Máscara de red
-    mascara = TUI.colorea(f"{ipv4_network.netmask}",Color.azul)
-    trad = "Subnet Mask " + TUI.colorea(f"(Máscara de subred)",Color.gris)
+    mascara = Tui.colorea(f"{ipv4_network.netmask}",Color.azul)
+    trad = "Subnet Mask " + Tui.colorea(f"(Máscara de subred)",Color.gris)
     Banner.display_line_result(trad, mascara)
 
     # Dirección de subred
-    subred = TUI.colorea(f"{cidr.subred}",Color.azul)
-    trad = f"Subnet address" + TUI.colorea(f"(Dirección subred)",Color.gris)
+    subred = Tui.colorea(f"{cidr.subred}",Color.azul)
+    trad = f"Subnet address" + Tui.colorea(f"(Dirección subred)",Color.gris)
     Banner.display_line_result(f"{trad}", subred)
     
     # Wildcard Bits
-    mascara_host = TUI.colorea(f"{ipv4_network.hostmask}",Color.azul)
-    trad = f"Wildcard Bits" + TUI.colorea(f"(Máscara de host)",Color.gris)
+    mascara_host = Tui.colorea(f"{ipv4_network.hostmask}",Color.azul)
+    trad = f"Wildcard Bits" + Tui.colorea(f"(Máscara de host)",Color.gris)
     Banner.display_line_result(f"{trad}", mascara_host)
 
     #Total Hosts
-    mascara = TUI.colorea(f"{ipv4_network.num_addresses}",Color.azul)
-    trad = f"Total Hosts" + TUI.colorea(f"(Total Hosts)",Color.gris)
+    mascara = Tui.colorea(f"{ipv4_network.num_addresses}",Color.azul)
+    trad = f"Total Hosts" + Tui.colorea(f"(Total Hosts)",Color.gris)
     Banner.display_line_result(f"{trad}", mascara)
     print()

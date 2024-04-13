@@ -13,8 +13,8 @@ class Color:
     reset = 0       #'\x1b[0m'
 
 
-class TUI:
-    """TUI es una clase usada para la impresión de colores en la terminal."""
+class Tui:
+    """Tui es una clase usada para la impresión de colores por terminal."""
 
     @classmethod
     def all_colors(cls):
